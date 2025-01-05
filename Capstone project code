@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Movie Ticket Booking</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      transition: background 0.5s;
+    }
+    .container {
+      background: rgba(255, 255, 255, 0.9);
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
+      width: 90%;
+      max-width: 600px;
+      text-align: center;
+    }
+    h1, h2 {
+      margin: 10px 0;
+      font-size: 24px;
+    }
+    button, select, input[type="radio"] {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button {
+      background: #ff6f61;
+      color: #fff;
+    }
+    button:hover {
+      background: #e65c50;
+    }
+    .seating {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 10px;
+      margin-top: 20px;
+    }
+    .seat {
+      padding: 10px;
+      background: #f0f0f0;
+      text-align: center;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .seat.selected {
+      background: #ff6f61;
+      color: #fff;
+    }
+    .hidden {
+      display: none;
+    }
+    .movie-img {
+      width: 100px;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 10px;
+      margin-bottom: 10px;
+    }
+    #page5 strong {
+      display: inline-block;
+      text-align: left;
+      width: 100px;
+    }
+    #home-icon {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      font-size: 20px;
+      color: #ff6f61;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body id="body">
+  <div class="container" id="page1">
+    <h1>Select a Movie</h1>
+    <div id="movie-options">
+      <button onclick="selectMovie('2018', '/mnt/data/download (6).jpeg')">2018</button>
+      <button onclick="selectMovie('Varisu', '/mnt/data/images (5).jpeg')">Varisu</button>
+      <button onclick="selectMovie('KGF', '/mnt/data/download (5).jpeg')">KGF</button>
+      <button onclick="selectMovie('Kalki', '/mnt/data/images (4).jpeg')">Kalki</button>
+      <button onclick="selectMovie('Saaho', '/mnt/data/saaho.jpg')">Saaho</button>
+      <button onclick="selectMovie('Dhruva', '/mnt/data/dhruva.jpg')">Dhruva</button>
+      <button onclick="selectMovie('Chennai Express', '/mnt/data/chennai.jpg')">Chennai Express</button>
+    </div>
+    <div id="home-icon" onclick="showBookingHistory()">📜</div>
+  </div>
+
+  <div class="container hidden" id="page2">
+    <h1>Select Language</h1>
+    <select id="language">
+      <option value="Telugu">Telugu</option>
+      <option value="Tamil">Tamil</option>
+      <option value="Hindi">Hindi</option>
+      <option value="Marathi">Marathi</option>
+      <option value="Malayalam">Malayalam</option>
+      <option value="Kannada">Kannada</option>
+    </select>
+    <button onclick="goToSeating()">Next</button>
+  </div>
+
+  <div class="container hidden" id="page3">
+    <h1>Select Seats</h1>
+    <div class="seating" id="seating"></div>
+    <button onclick="goToPayment()">Next</button>
+  </div>
+
+  <div class="container hidden" id="page4">
+    <h1>Payment Method</h1>
+    <div>
+      <label><input type="radio" name="payment" value="Cash"> Cash</label>
+      <label><input type="radio" name="payment" value="Card"> Card</label>
+      <label><input type="radio" name="payment" value="Online Payment"> Online Payment</label>
+      <label><input type="radio" name="payment" value="Net Banking"> Net Banking</label>
+    </div>
+    <button onclick="goToSummary()">Next</button>
+  </div>
+
+  <div class="container hidden" id="page5">
+    <h1>Payment Successful</h1>
+    <h2>Ticket Details</h2>
+    <p id="ticket-details"></p>
+    <button onclick="goHome()">Back to Home</button>
+  </div>
+
+  <script>
+    const body = document.getElementById('body');
+    let selectedSeats = [];
+    let selectedMovie = "";
+    let selectedLanguage = "";
+    let selectedPayment = "";
+    let bookingHistory = [];
+
+    function selectMovie(movie, image) {
+      selectedMovie = movie;
+      body.style.background = `url('${image}') no-repeat center center/cover`;
+      document.getElementById('page1').classList.add('hidden');
+      document.getElementById('page2').classList.remove('hidden');
+    }
+
+    function goToSeating() {
+      selectedLanguage = document.getElementById('language').value;
+      document.getElementById('page2').classList.add('hidden');
+      document.getElementById('page3').classList.remove('hidden');
+      generateSeats();
+    }
+
+    function generateSeats() {
+      const seating = document.getElementById('seating');
+      seating.innerHTML = "";
+      for (let i = 1; i <= 50; i++) {
+        const seat = document.createElement('div');
+        seat.className = 'seat';
+        seat.textContent = i;
+        seat.addEventListener('click', () => {
+          seat.classList.toggle('selected');
+          if (seat.classList.contains('selected')) {
+            selectedSeats.push(i);
+          } else {
+            selectedSeats = selectedSeats.filter(s => s !== i);
+          }
+        });
+        seating.appendChild(seat);
+      }
+    }
+
+    function goToPayment() {
+      document.getElementById('page3').classList.add('hidden');
+      document.getElementById('page4').classList.remove('hidden');
+    }
+
+    function goToSummary() {
+      selectedPayment = document.querySelector('input[name="payment"]:checked')?.value;
+      if (!selectedPayment) {
+        alert('Please select a payment method');
+        return;
+      }
+      document.getElementById('page4').classList.add('hidden');
+      document.getElementById('page5').classList.remove('hidden');
+      const amountPaid = selectedSeats.length * 150;
+      const ticketDetails = {
+        movie: selectedMovie,
+        language: selectedLanguage,
+        seats: selectedSeats,
+        paymentMethod: selectedPayment,
+        amountPaid: amountPaid
+      };
+      bookingHistory.push(ticketDetails);
+      document.getElementById('ticket-details').innerHTML = `
+        <strong>Movie:</strong> ${ticketDetails.movie}<br>
+        <strong>Language:</strong> ${ticketDetails.language}<br>
+        <strong>Seats:</strong> ${ticketDetails.seats.join(', ')}<br>
+        <strong>Payment Method:</strong> ${ticketDetails.paymentMethod}<br>
+        <strong>Amount Paid:</strong> ₹${ticketDetails.amountPaid}<br>
+      `;
+    }
+
+    function goHome() {
+      document.getElementById('page5').classList.add('hidden');
+      document.getElementById('page1').classList.remove('hidden');
+      body.style.background = 'rgba(255, 255, 255, 0.9) center center/cover';
+      selectedSeats = [];
+      selectedMovie = "";
+      selectedLanguage = "";
+      selectedPayment = "";
+    }
+
+    function showBookingHistory() {
+      let historyText = 'Booking History:\n';
+      bookingHistory.forEach((booking, index) => {
+        historyText += `${index + 1}. Movie: ${booking.movie}, Language: ${booking.language}, Seats: ${booking.seats.join(', ')}, Payment: ${booking.paymentMethod}, Amount: ₹${booking.amountPaid}\n`;
+      });
+      alert(historyText);
+    }
+  </script>
+</body>
+</html>
